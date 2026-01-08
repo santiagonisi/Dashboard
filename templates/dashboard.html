@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard Corporativo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background: #ffffff;
+            color: #111;
+        }
+
+        header {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            padding: 20px 40px;
+            border-bottom: 3px solid #facc15;
+        }
+
+        header img {
+            height: 55px;
+        }
+
+        header h1 {
+            font-size: 26px;
+            font-weight: 700;
+        }
+
+        header span {
+            color: #facc15;
+        }
+
+        main {
+            padding: 50px 40px;
+            max-width: 1300px;
+            margin: auto;
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 30px;
+        }
+
+        .card {
+            border: 2px solid #111;
+            border-radius: 18px;
+            padding: 35px 25px;
+            text-align: center;
+            background: #fff;
+            transition: all 0.25s ease;
+        }
+
+        .card:hover {
+            border-color: #facc15;
+            transform: translateY(-6px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+        }
+
+        .icon {
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+
+        .card h2 {
+            font-size: 20px;
+            margin-bottom: 8px;
+        }
+
+        .card p {
+            font-size: 14px;
+            color: #444;
+        }
+
+        a.card-link {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        footer {
+            margin-top: 60px;
+            text-align: center;
+            font-size: 13px;
+            color: #555;
+        }
+
+        .logout {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #111;
+            color: #fff;
+            padding: 12px 18px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .logout:hover {
+            background: #facc15;
+            color: #111;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <img src="{{ url_for('static', filename='img/logo_empresa.png') }}" alt="Logo Empresa">
+    <h1>Panel <span>Corporativo</span></h1>
+</header>
+
+<main>
+    <section class="dashboard">
+
+        <a href="{{ logistica }}" class="card-link">
+            <div class="card">
+                <div class="icon">🚚</div>
+                <h2>Logística</h2>
+                <p>Gestión y planificación de transporte</p>
+            </div>
+        </a>
+
+        <a href="{{ hormigon }}" class="card-link">
+            <div class="card">
+                <div class="icon">🏗️</div>
+                <h2>Hormigón</h2>
+                <p>Control operativo y producción</p>
+            </div>
+        </a>
+
+        <a href="{{ presupuestos }}" class="card-link">
+            <div class="card">
+                <div class="icon">🧾</div>
+                <h2>Presupuestos</h2>
+                <p>Gestión y seguimiento</p>
+            </div>
+        </a>
+
+        <a href="{{ dcp }}" class="card-link">
+            <div class="card">
+                <div class="icon">📊</div>
+                <h2>DCP</h2>
+                <p>Datos y control de procesos</p>
+            </div>
+        </a>
+
+    </section>
+</main>
+
+<a href="https://auth.empresa.com/logout" class="logout">Cerrar sesión</a>
+
+<footer>
+    © 2026 · Dashboard interno de la empresa
+</footer>
+
+</body>
+</html>
