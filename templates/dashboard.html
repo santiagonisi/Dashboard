@@ -21,6 +21,7 @@
         }
 
         header {
+            background: #111;
             display: flex;
             align-items: center;
             gap: 20px;
@@ -116,8 +117,8 @@
 <body>
 
 <header>
-    <img src="{{ url_for('static', filename='img/logo_empresa.png') }}" alt="Logo Empresa">
-    <h1>Panel <span>Corporativo</span></h1>
+    <img src="{{ url_for('static', filename='img/isologo IARSA.png') }}" alt="Logo Empresa">
+    
 </header>
 
 <main>
@@ -127,7 +128,7 @@
             <div class="card">
                 <div class="icon">🚚</div>
                 <h2>Logística</h2>
-                <p>Gestión y planificación de transporte</p>
+                <p>Gestión de transporte</p>
             </div>
         </a>
 
@@ -155,13 +156,27 @@
             </div>
         </a>
 
+        <a href="{{ sobre II }}" class="card-link">
+            <div class="card">
+                <div class="icon"></div>
+                <h2>Sobre II</h2>
+                <p>Administracion para licitaciones</p>
+            </div>
+        </a>
+
+        <a href="{{ polizas }}" class="card-link">
+            <div class="card">
+                <div class="icon">📋</div>
+                <h2>Polizas</h2>
+                <p>Gestion de polizas</p>
+            </div>
     </section>
 </main>
 
 <a href="https://auth.empresa.com/logout" class="logout">Cerrar sesión</a>
 
 <footer>
-    © 2026 · Dashboard interno de la empresa
+    © 2026 · Dashboard interno de la empresa · IARSA
 </footer>
 
 </body>
