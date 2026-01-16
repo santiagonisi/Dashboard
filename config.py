@@ -8,6 +8,11 @@ LOGISTICA_URL = "https://logistica.iarsa.com"
 HORMIGON_URL = "https://hormigon.iarsa.com"
 PRESUPUESTOS_URL = "https://gestion.iarsa.com"
 DCP_URL = "https://dcp.iarsa.com"
+SOBRE_II_URL = "https://sobre2.iarsa.com"
+POLIZAS_URL = "https://polizas.iarsa.com"
+RRHH_URL = "https://rrhh.iarsa.com"
+COMBUSTIBLE_URL = "https://combustible.iarsa.com"
+
 
 # =========================
 # SEGURIDAD

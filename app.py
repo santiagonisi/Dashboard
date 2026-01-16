@@ -13,8 +13,13 @@ def dashboard():
         logistica=config.LOGISTICA_URL,
         hormigon=config.HORMIGON_URL,
         presupuestos=config.PRESUPUESTOS_URL,
-        dcp=config.DCP_URL
+        dcp=config.DCP_URL,
+        sobre_II=config.SOBRE_II_URL,
+        polizas=config.POLIZAS_URL,
+        rrhh=config.RRHH_URL,
+        combustible=config.COMBUSTIBLE_URL
     )
+
 
 
 if __name__ == "__main__":
