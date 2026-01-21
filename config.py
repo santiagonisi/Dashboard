@@ -6,7 +6,7 @@ AUTH_URL = "https://auth.iarsa.com"
 
 LOGISTICA_URL = "https://logistica.iarsa.com"
 HORMIGON_URL = "https://hormigon.iarsa.com"
-PRESUPUESTOS_URL = "https://gestion.iarsa.com"
+PRESUPUESTOS_URL = "https://gp.iarsa.com"
 DCP_URL = "https://dcp.iarsa.com"
 SOBRE_II_URL = "https://sobre2.iarsa.com"
 POLIZAS_URL = "https://polizas.iarsa.com"
