@@ -1,22 +1,17 @@
-# =========================
-# DOMINIOS
-# =========================
+import os
 
-AUTH_URL = "https://auth.iarsa.com"
+BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 
-LOGISTICA_URL = "https://logistica.iarsa.com"
-HORMIGON_URL = "https://hormigon.iarsa.com"
-PRESUPUESTOS_URL = "https://gp.iarsa.com"
-DCP_URL = "https://dcp.iarsa.com"
-SOBRE_II_URL = "https://sobre2.iarsa.com"
-POLIZAS_URL = "https://polizas.iarsa.com"
-RRHH_URL = "https://rrhh.iarsa.com"
-COMBUSTIBLE_URL = "https://combustible.iarsa.com"
+class Config:
+    SECRET_KEY = "clave-secreta-provisional"
 
+    # URLs de los módulos
+    LOGISTICA_URL = "http://intranet/logistica"
+    HORMIGON_URL = "http://intranet/hormigon"
+    PRESUPUESTOS_URL = "http://intranet/presupuestos"
+    DCP_URL = "http://intranet/dcp"
+    SOBRE_II_URL = "http://intranet/sobre_ii"
+    POLIZAS_URL = "http://intranet/polizas"
+    RRHH_URL = "http://intranet/rrhh"
+    COMBUSTIBLE_URL = "http://intranet/combustible"
 
-# =========================
-# SEGURIDAD
-# =========================
-
-JWT_SECRET = "CAMBIA_ESTO_POR_UN_SECRET_LARGO_Y_UNICO"
-JWT_ALGORITHM = "HS256"
