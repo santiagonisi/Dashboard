@@ -3,7 +3,8 @@ import os
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 
 class Config:
-    SECRET_KEY = "clave-secreta-provisional"
+    SECRET_KEY = "intranet_iarse_2026_super_segura"
+    DATABASE = os.path.join(BASE_DIR, "database", "app.db")
 
     # URLs de los módulos
     LOGISTICA_URL = "http://intranet/logistica"
