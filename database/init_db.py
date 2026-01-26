@@ -1,7 +1,6 @@
 import sys
 import os
 
-# Agregar la carpeta raíz del proyecto al path
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.append(BASE_DIR)
 

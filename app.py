@@ -23,6 +23,16 @@ def get_user(usuario):
     return user
 
 
+def role_required(roles):
+    def wrapper(f):
+        @wraps(f)
+        def decorated(*args, **kwargs):
+            if "rol" not in session or session["rol"] not in roles:
+                return redirect(url_for("dashboard"))
+            return f(*args, **kwargs)
+        return decorated
+    return wrapper
+
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
@@ -40,7 +50,6 @@ def login():
         return render_template("login.html", error="Credenciales incorrectas")
 
     return render_template("login.html")
-
 
 
 @app.route("/")
@@ -63,11 +72,51 @@ def dashboard():
 
 
 
+@app.route("/logistica")
+@role_required(["admin", "operador"])
+def logistica():
+    return render_template("logistica.html")
+
+@app.route("/hormigon")
+@role_required(["admin", "laboratorio"])
+def hormigon():
+    return render_template("hormigon.html")
+
+@app.route("/dcp")
+@role_required(["admin", "laboratorio"])
+def dcp():
+    return render_template("dcp.html")
+
+@app.route("/sobre-ii")
+@role_required(["admin", "tecnica"])
+def sobre_ii():
+    return render_template("sobre_ii.html")
+
+@app.route("/polizas")
+@role_required(["admin", "tecnica"])
+def polizas():
+    return render_template("polizas.html")
+
+@app.route("/combustible")
+@role_required(["admin", "tecnica"])
+def combustible():
+    return render_template("combustible.html")
+
+@app.route("/presupuestos")
+@role_required(["admin", "tecnica"])
+def presupuestos():
+    return render_template("presupuestos.html")
+
+@app.route("/rrhh")
+@role_required(["admin", "gestion"])
+def rrhh():
+    return render_template("rrhh.html")
+
+
 @app.route("/logout")
 def logout():
     session.clear()
     return redirect(url_for("login"))
-
 
 
 if __name__ == "__main__":

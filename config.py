@@ -6,7 +6,6 @@ class Config:
     SECRET_KEY = "intranet_iarse_2026_super_segura"
     DATABASE = os.path.join(BASE_DIR, "database", "app.db")
 
-    # URLs de los módulos
     LOGISTICA_URL = "http://intranet/logistica"
     HORMIGON_URL = "http://intranet/hormigon"
     PRESUPUESTOS_URL = "http://intranet/presupuestos"

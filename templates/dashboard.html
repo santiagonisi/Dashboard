@@ -126,6 +126,7 @@
 <main>
     <section class="dashboard">
 
+        {% if session["rol"] in ["admin", "operador"] %}
         <a href="{{ logistica }}" class="card-link">
             <div class="card">
                 <div class="icon">🚚</div>
@@ -133,7 +134,10 @@
                 <p>Gestión de transporte</p>
             </div>
         </a>
+        {% endif %}
 
+        
+        {% if session["rol"] in ["admin", "laboratorio"] %}
         <a href="{{ hormigon }}" class="card-link">
             <div class="card">
                 <div class="icon">🏗️</div>
@@ -141,15 +145,21 @@
                 <p>Control operativo y producción</p>
             </div>
         </a>
+        {% endif %}
 
+
+        {% if session["rol"] in ["admin", "tecnica"] %}
         <a href="{{ presupuestos }}" class="card-link">
-            <div class="card">
+        <div class="card">
                 <div class="icon">🧾</div>
                 <h2>Presupuestos</h2>
                 <p>Gestión y seguimiento</p>
             </div>
         </a>
+        {% endif %}
 
+
+        {% if session["rol"] in ["admin", "laboratorio"] %}
         <a href="{{ dcp }}" class="card-link">
             <div class="card">
                 <div class="icon">📊</div>
@@ -157,7 +167,10 @@
                 <p>Datos y control de procesos</p>
             </div>
         </a>
+        {% endif %}
 
+
+        {% if session["rol"] in ["admin", "tecnica"] %}
         <a href="{{ sobre_II }}" class="card-link">
             <div class="card">
                 <div class="icon">✉️</div>
@@ -165,25 +178,31 @@
                 <p>Administración para licitaciones</p>
             </div>
         </a>
+        {% endif %}
 
 
+
+        {% if session["rol"] in ["admin", "tecnica"] %}
         <a href="{{ polizas }}" class="card-link">
             <div class="card">
                 <div class="icon">📋</div>
                 <h2>Polizas</h2>
-                <p>Gestion de polizas</p>
+                <p>Gestión de polizas</p>
             </div>
         </a>
+        {% endif %}
 
+        {% if session["rol"] in ["admin", "gestion"] %}
         <a href="{{ rrhh }}" class="card-link">
             <div class="card">
                 <div class="icon">👥</div>
                 <h2>RRHH</h2>
-                <p>Control de nomina</p>
+                <p>Control de nómina</p>
             </div>
         </a>
+        {% endif %}
 
-
+        {% if session["rol"] in ["admin", "tecnica"] %}
         <a href="{{ combustible }}" class="card-link">
             <div class="card">
                 <div class="icon">⛽</div>
@@ -191,6 +210,8 @@
                 <p>Control de combustible</p>
             </div>
         </a>
+        {% endif %}
+
 
     </section>
 </main>
