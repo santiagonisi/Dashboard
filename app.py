@@ -1,11 +1,14 @@
 import sqlite3
 from functools import wraps
-from werkzeug.security import check_password_hash
+from werkzeug.security import check_password_hash, generate_password_hash
 from flask import Flask, render_template, request, redirect, url_for, session
 from config import Config
 
 app = Flask(__name__)
 app.config.from_object(Config)
+
+
+ROLES = ["admin", "operador", "laboratorio", "tecnica", "gestion"]
 
 
 def get_user(usuario):
@@ -71,7 +74,6 @@ def dashboard():
     )
 
 
-
 @app.route("/logistica")
 @role_required(["admin", "operador"])
 def logistica():
@@ -111,6 +113,36 @@ def presupuestos():
 @role_required(["admin", "gestion"])
 def rrhh():
     return render_template("rrhh.html")
+
+
+@app.route("/admin/usuarios", methods=["GET", "POST"])
+@role_required(["admin"])
+def admin_usuarios():
+    conn = sqlite3.connect(Config.DATABASE)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+
+    if request.method == "POST":
+        usuario = request.form["usuario"]
+        password = generate_password_hash(request.form["password"])
+        rol = request.form["rol"]
+
+        cursor.execute("""
+            INSERT INTO usuarios (usuario, password, rol, activo)
+            VALUES (?, ?, ?, 1)
+        """, (usuario, password, rol))
+
+        conn.commit()
+
+    cursor.execute("SELECT * FROM usuarios")
+    usuarios = cursor.fetchall()
+    conn.close()
+
+    return render_template(
+        "admin_usuarios.html",
+        usuarios=usuarios,
+        roles=ROLES
+    )
 
 
 @app.route("/logout")
