@@ -79,35 +79,42 @@ def dashboard():
 def logistica():
     return render_template("logistica.html")
 
+
 @app.route("/hormigon")
 @role_required(["admin", "laboratorio"])
 def hormigon():
     return render_template("hormigon.html")
+
 
 @app.route("/dcp")
 @role_required(["admin", "laboratorio"])
 def dcp():
     return render_template("dcp.html")
 
+
 @app.route("/sobre-ii")
 @role_required(["admin", "tecnica"])
 def sobre_ii():
     return render_template("sobre_ii.html")
+
 
 @app.route("/polizas")
 @role_required(["admin", "tecnica"])
 def polizas():
     return render_template("polizas.html")
 
+
 @app.route("/combustible")
 @role_required(["admin", "tecnica"])
 def combustible():
     return render_template("combustible.html")
 
+
 @app.route("/presupuestos")
 @role_required(["admin", "tecnica"])
 def presupuestos():
     return render_template("presupuestos.html")
+
 
 @app.route("/rrhh")
 @role_required(["admin", "gestion"])
@@ -143,6 +150,24 @@ def admin_usuarios():
         usuarios=usuarios,
         roles=ROLES
     )
+
+
+@app.route("/admin/usuarios/toggle/<int:user_id>")
+@role_required(["admin"])
+def toggle_usuario(user_id):
+    conn = sqlite3.connect(Config.DATABASE)
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        UPDATE usuarios
+        SET activo = CASE activo WHEN 1 THEN 0 ELSE 1 END
+        WHERE id = ?
+    """, (user_id,))
+
+    conn.commit()
+    conn.close()
+
+    return redirect(url_for("admin_usuarios"))
 
 
 @app.route("/logout")
