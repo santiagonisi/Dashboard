@@ -129,17 +129,22 @@ def admin_usuarios():
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
 
+    error_msg = request.args.get("error")
+
     if request.method == "POST":
         usuario = request.form["usuario"]
-        password = generate_password_hash(request.form["password"])
+        password = request.form["password"]
         rol = request.form["rol"]
 
-        cursor.execute("""
-            INSERT INTO usuarios (usuario, password, rol, activo)
-            VALUES (?, ?, ?, 1)
-        """, (usuario, password, rol))
-
-        conn.commit()
+        try:
+            password_hash = generate_password_hash(password)
+            cursor.execute("""
+                INSERT INTO usuarios (usuario, password, rol, activo)
+                VALUES (?, ?, ?, 1)
+            """, (usuario, password_hash, rol))
+            conn.commit()
+        except sqlite3.IntegrityError:
+            error_msg = "El usuario ya existe."
 
     cursor.execute("SELECT * FROM usuarios")
     usuarios = cursor.fetchall()
@@ -148,8 +153,83 @@ def admin_usuarios():
     return render_template(
         "admin_usuarios.html",
         usuarios=usuarios,
-        roles=ROLES
+        roles=ROLES,
+        error=error_msg
     )
+
+
+@app.route("/admin/usuarios/edit/<int:user_id>", methods=["GET", "POST"])
+@role_required(["admin"])
+def edit_usuario(user_id):
+    conn = sqlite3.connect(Config.DATABASE)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT * FROM usuarios WHERE id = ?", (user_id,))
+    user = cursor.fetchone()
+
+    if not user:
+        conn.close()
+        return redirect(url_for("admin_usuarios", error="Usuario no encontrado"))
+
+    if request.method == "POST":
+        usuario = request.form["usuario"]
+        rol = request.form["rol"]
+        activo = 1 if request.form.get("activo") == "1" else 0
+        password = request.form.get("password")
+
+        try:
+            if password:
+                password_hash = generate_password_hash(password)
+                cursor.execute("""
+                    UPDATE usuarios SET usuario = ?, password = ?, rol = ?, activo = ?
+                    WHERE id = ?
+                """, (usuario, password_hash, rol, activo, user_id))
+            else:
+                cursor.execute("""
+                    UPDATE usuarios SET usuario = ?, rol = ?, activo = ?
+                    WHERE id = ?
+                """, (usuario, rol, activo, user_id))
+            conn.commit()
+        except sqlite3.IntegrityError:
+            conn.close()
+            return redirect(url_for("admin_usuarios", error="El usuario ya existe"))
+
+        conn.close()
+        return redirect(url_for("admin_usuarios"))
+
+    conn.close()
+    return render_template("admin_edit_user.html", user=user, roles=ROLES)
+
+
+@app.route("/admin/usuarios/delete/<int:user_id>", methods=["POST"])
+@role_required(["admin"])
+def delete_usuario(user_id):
+    conn = sqlite3.connect(Config.DATABASE)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT * FROM usuarios WHERE id = ?", (user_id,))
+    user = cursor.fetchone()
+
+    if not user:
+        conn.close()
+        return redirect(url_for("admin_usuarios", error="Usuario no encontrado"))
+
+    cursor.execute("SELECT COUNT(*) as count FROM usuarios WHERE rol = 'admin' AND activo = 1")
+    admin_count = cursor.fetchone()[0]
+    if user["rol"] == "admin" and admin_count <= 1:
+        conn.close()
+        return redirect(url_for("admin_usuarios", error="No se puede eliminar al único administrador activo"))
+
+    if user["usuario"] == session.get("usuario"):
+        conn.close()
+        return redirect(url_for("admin_usuarios", error="No puedes eliminar el usuario con el que estás logueado"))
+
+    cursor.execute("DELETE FROM usuarios WHERE id = ?", (user_id,))
+    conn.commit()
+    conn.close()
+    return redirect(url_for("admin_usuarios"))
 
 
 @app.route("/admin/usuarios/toggle/<int:user_id>")
