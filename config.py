@@ -1,9 +1,12 @@
 import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 
 class Config:
-    SECRET_KEY = os.getenv("SECRET_KEY", "intranet_iarse_2026_super_segura")
+    SECRET_KEY = os.getenv("SECRET_KEY", "dev_key_only_for_development")
     DATABASE = os.path.join(BASE_DIR, "database", "app.db")
 
     LOGISTICA_URL = "https://logistica.iarsa.com.ar/"
