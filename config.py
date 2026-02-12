@@ -6,12 +6,13 @@ class Config:
     SECRET_KEY = os.getenv("SECRET_KEY", "intranet_iarse_2026_super_segura")
     DATABASE = os.path.join(BASE_DIR, "database", "app.db")
 
-    LOGISTICA_URL = "http://intranet/logistica"
-    HORMIGON_URL = "http://intranet/hormigon"
-    PRESUPUESTOS_URL = "http://intranet/presupuestos"
-    DCP_URL = "http://intranet/dcp"
-    SOBRE_II_URL = "http://intranet/sobre_ii"
-    POLIZAS_URL = "http://intranet/polizas"
-    RRHH_URL = "http://intranet/rrhh"
-    COMBUSTIBLE_URL = "http://intranet/combustible"
+    LOGISTICA_URL = "https://logistica.iarsa.com.ar/"
+    HORMIGON_URL = "https://hormigon.iarsa.com.ar/parte_diario"
+    PRESUPUESTOS_URL = "https://gp.iarsa.com.ar/"
+    DCP_URL = "/launch/dcp"  # Ejecutable local
+    SOBRE_II_URL = "#"  # Por desarrollar
+    POLIZAS_URL = "#"  # Por desarrollar
+    RRHH_URL = "#"  # Por desarrollar
+    COMBUSTIBLE_URL = "#"  # Por desarrollar
+
 

@@ -1,4 +1,5 @@
 import sqlite3
+import subprocess
 from functools import wraps
 from werkzeug.security import check_password_hash, generate_password_hash
 from flask import Flask, render_template, request, redirect, url_for, session, abort
@@ -66,14 +67,14 @@ def dashboard():
 
     return render_template(
         "dashboard.html",
-        logistica="/logistica",
-        hormigon="/hormigon",
-        presupuestos="/presupuestos",
-        dcp="/dcp",
-        sobre_II="/sobre-ii",
-        polizas="/polizas",
-        rrhh="/rrhh",
-        combustible="/combustible"
+        logistica=Config.LOGISTICA_URL,
+        hormigon=Config.HORMIGON_URL,
+        presupuestos=Config.PRESUPUESTOS_URL,
+        dcp=Config.DCP_URL,
+        sobre_II=Config.SOBRE_II_URL,
+        polizas=Config.POLIZAS_URL,
+        rrhh=Config.RRHH_URL,
+        combustible=Config.COMBUSTIBLE_URL
     )
 
 
@@ -254,6 +255,35 @@ def toggle_usuario(user_id):
 def logout():
     session.clear()
     return redirect(url_for("login"))
+
+
+@app.route("/api/auth/status", methods=["GET"])
+def auth_status():
+    """Devuelve estado de autenticación en JSON para validar en Nginx/Apache"""
+    if "usuario" not in session:
+        return {"autenticado": False, "usuario": None, "rol": None}, 401
+    
+    return {
+        "autenticado": True,
+        "usuario": session.get("usuario"),
+        "rol": session.get("rol")
+    }, 200
+
+@app.route("/launch/dcp")
+@role_required(["admin", "laboratorio"])
+def launch_dcp():
+    """Lanza la aplicación DCP ejecutable"""
+    try:
+        subprocess.Popen(
+            r"C:\Users\Usuario\Desktop\Dcp\dist\ProcesadorDCP\ProcesadorDCP.exe",
+            shell=False,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL
+        )
+        return redirect(url_for("dashboard"))
+    except Exception as e:
+        return redirect(url_for("dashboard"))
+
 
 
 if __name__ == "__main__":
