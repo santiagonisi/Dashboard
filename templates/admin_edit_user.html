@@ -11,6 +11,7 @@
 <h2 class="mb-4">Editar usuario</h2>
 
 <form method="POST" class="row g-3">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <div class="col-md-4">
         <label class="form-label">Usuario</label>
         <input type="text" name="usuario" class="form-control" value="{{ user.usuario }}" required>

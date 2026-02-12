@@ -1,37 +1,40 @@
 import sqlite3
 from functools import wraps
 from werkzeug.security import check_password_hash, generate_password_hash
-from flask import Flask, render_template, request, redirect, url_for, session
+from flask import Flask, render_template, request, redirect, url_for, session, abort
+from flask_wtf.csrf import CSRFProtect
 from config import Config
+from database.db import get_db_connection
 
 app = Flask(__name__)
 app.config.from_object(Config)
+csrf = CSRFProtect(app)
 
 
 ROLES = ["admin", "operador", "laboratorio", "tecnica", "gestion"]
 
 
 def get_user(usuario):
-    conn = sqlite3.connect(Config.DATABASE)
-    conn.row_factory = sqlite3.Row
-    cursor = conn.cursor()
-
-    cursor.execute(
-        "SELECT * FROM usuarios WHERE usuario = ? AND activo = 1",
-        (usuario,)
-    )
-
-    user = cursor.fetchone()
-    conn.close()
-    return user
+    conn = get_db_connection()
+    try:
+        cursor = conn.cursor()
+        cursor.execute(
+            "SELECT * FROM usuarios WHERE usuario = ? AND activo = 1",
+            (usuario,)
+        )
+        return cursor.fetchone()
+    finally:
+        conn.close()
 
 
 def role_required(roles):
     def wrapper(f):
         @wraps(f)
         def decorated(*args, **kwargs):
-            if "rol" not in session or session["rol"] not in roles:
-                return redirect(url_for("dashboard"))
+            if "usuario" not in session:
+                return redirect(url_for("login"))
+            if session.get("rol") not in roles:
+                return abort(403)
             return f(*args, **kwargs)
         return decorated
     return wrapper
@@ -125,8 +128,7 @@ def rrhh():
 @app.route("/admin/usuarios", methods=["GET", "POST"])
 @role_required(["admin"])
 def admin_usuarios():
-    conn = sqlite3.connect(Config.DATABASE)
-    conn.row_factory = sqlite3.Row
+    conn = get_db_connection()
     cursor = conn.cursor()
 
     error_msg = request.args.get("error")
@@ -161,8 +163,7 @@ def admin_usuarios():
 @app.route("/admin/usuarios/edit/<int:user_id>", methods=["GET", "POST"])
 @role_required(["admin"])
 def edit_usuario(user_id):
-    conn = sqlite3.connect(Config.DATABASE)
-    conn.row_factory = sqlite3.Row
+    conn = get_db_connection()
     cursor = conn.cursor()
 
     cursor.execute("SELECT * FROM usuarios WHERE id = ?", (user_id,))
@@ -205,8 +206,7 @@ def edit_usuario(user_id):
 @app.route("/admin/usuarios/delete/<int:user_id>", methods=["POST"])
 @role_required(["admin"])
 def delete_usuario(user_id):
-    conn = sqlite3.connect(Config.DATABASE)
-    conn.row_factory = sqlite3.Row
+    conn = get_db_connection()
     cursor = conn.cursor()
 
     cursor.execute("SELECT * FROM usuarios WHERE id = ?", (user_id,))
@@ -232,10 +232,10 @@ def delete_usuario(user_id):
     return redirect(url_for("admin_usuarios"))
 
 
-@app.route("/admin/usuarios/toggle/<int:user_id>")
+@app.route("/admin/usuarios/toggle/<int:user_id>", methods=["POST"])
 @role_required(["admin"])
 def toggle_usuario(user_id):
-    conn = sqlite3.connect(Config.DATABASE)
+    conn = get_db_connection()
     cursor = conn.cursor()
 
     cursor.execute("""

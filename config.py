@@ -3,7 +3,7 @@ import os
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 
 class Config:
-    SECRET_KEY = "intranet_iarse_2026_super_segura"
+    SECRET_KEY = os.getenv("SECRET_KEY", "intranet_iarse_2026_super_segura")
     DATABASE = os.path.join(BASE_DIR, "database", "app.db")
 
     LOGISTICA_URL = "http://intranet/logistica"

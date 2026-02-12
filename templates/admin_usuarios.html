@@ -41,6 +41,7 @@
         {% endif %}
 
         <form method="POST" class="row g-3 mb-4">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <div class="col-md-4">
                 <input type="text" name="usuario" class="form-control" placeholder="Usuario" required>
             </div>
@@ -87,13 +88,15 @@
                         </td>
                         <td class="text-center">
                             {% if u.activo %}
-                                <a href="{{ url_for('toggle_usuario', user_id=u.id) }}" class="btn btn-sm btn-outline-danger btn-emoji" title="Desactivar" aria-label="Desactivar">
-                                    ⛔
-                                </a>
+                                <form method="POST" action="{{ url_for('toggle_usuario', user_id=u.id) }}" style="display:inline">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <button class="btn btn-sm btn-outline-danger btn-emoji" title="Desactivar" aria-label="Desactivar">⛔</button>
+                                </form>
                             {% else %}
-                                <a href="{{ url_for('toggle_usuario', user_id=u.id) }}" class="btn btn-sm btn-outline-success btn-emoji" title="Activar" aria-label="Activar">
-                                    ✅
-                                </a>
+                                <form method="POST" action="{{ url_for('toggle_usuario', user_id=u.id) }}" style="display:inline">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <button class="btn btn-sm btn-outline-success btn-emoji" title="Activar" aria-label="Activar">✅</button>
+                                </form>
                             {% endif %}
 
                             <a href="{{ url_for('edit_usuario', user_id=u.id) }}" class="btn btn-sm btn-primary ms-2 btn-emoji" title="Editar" aria-label="Editar">
@@ -101,6 +104,7 @@
                             </a>
 
                             <form method="POST" action="{{ url_for('delete_usuario', user_id=u.id) }}" style="display:inline" onsubmit="return confirm('¿Eliminar usuario {{ u.usuario }}? Esta acción no se puede deshacer');">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                 <button class="btn btn-sm btn-outline-danger ms-2 btn-emoji" title="Eliminar" aria-label="Eliminar">🗑️</button>
                             </form>
                         </td>
