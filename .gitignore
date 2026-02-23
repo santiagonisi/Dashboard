@@ -1,5 +1,6 @@
 # Variables de entorno
 .env
+.env.*
 .env.local
 .env.*.local
 
@@ -40,6 +41,12 @@ build/
 config.local.py
 secrets.json
 credentials.json
+*.pem
+*.key
+*.p12
+*.crt
+id_rsa
+id_ed25519
 
 # Logs
 *.log

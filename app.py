@@ -20,6 +20,12 @@ csrf = CSRFProtect(app)
 ROLES = ["admin", "operador", "laboratorio", "tecnica", "gestion"]
 
 
+def redirect_to_module(module_name, target_url):
+    if not target_url or target_url.strip() in {"", "#"}:
+        return abort(503, description=f"Módulo '{module_name}' no disponible")
+    return redirect(target_url)
+
+
 def get_user(usuario):
     conn = get_db_connection()
     try:
@@ -87,49 +93,49 @@ def dashboard():
 @app.route("/logistica")
 @role_required(["admin", "operador"])
 def logistica():
-    return render_template("logistica.html")
+    return redirect_to_module("Logística", Config.LOGISTICA_URL)
 
 
 @app.route("/hormigon")
 @role_required(["admin", "laboratorio"])
 def hormigon():
-    return render_template("hormigon.html")
+    return redirect_to_module("Hormigón", Config.HORMIGON_URL)
 
 
 @app.route("/dcp")
 @role_required(["admin", "laboratorio"])
 def dcp():
-    return render_template("dcp.html")
+    return redirect_to_module("DCP", Config.DCP_URL)
 
 
 @app.route("/sobre-ii")
 @role_required(["admin", "tecnica"])
 def sobre_ii():
-    return render_template("sobre_ii.html")
+    return redirect_to_module("Sobre II", Config.SOBRE_II_URL)
 
 
 @app.route("/polizas")
 @role_required(["admin", "tecnica"])
 def polizas():
-    return render_template("polizas.html")
+    return redirect_to_module("Pólizas", Config.POLIZAS_URL)
 
 
 @app.route("/combustible")
-@role_required(["admin", "tecnica"])
+@role_required(["admin", "tecnica", "operador"])
 def combustible():
-    return render_template("combustible.html")
+    return redirect_to_module("Combustible", Config.COMBUSTIBLE_URL)
 
 
 @app.route("/presupuestos")
 @role_required(["admin", "tecnica"])
 def presupuestos():
-    return render_template("presupuestos.html")
+    return redirect_to_module("Presupuestos", Config.PRESUPUESTOS_URL)
 
 
 @app.route("/rrhh")
 @role_required(["admin", "gestion"])
 def rrhh():
-    return render_template("rrhh.html")
+    return redirect_to_module("RRHH", Config.RRHH_URL)
 
 
 @app.route("/admin/usuarios", methods=["GET", "POST"])
