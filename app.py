@@ -1,5 +1,7 @@
 import sqlite3
 import subprocess
+import os
+from datetime import timedelta
 from functools import wraps
 from werkzeug.security import check_password_hash, generate_password_hash
 from flask import Flask, render_template, request, redirect, url_for, session, abort
@@ -9,6 +11,9 @@ from database.db import get_db_connection
 
 app = Flask(__name__)
 app.config.from_object(Config)
+app.permanent_session_lifetime = timedelta(
+    minutes=Config.PERMANENT_SESSION_LIFETIME_MINUTES
+)
 csrf = CSRFProtect(app)
 
 
@@ -50,6 +55,7 @@ def login():
         user = get_user(usuario)
 
         if user and check_password_hash(user["password"], password):
+            session.permanent = True
             session["usuario"] = user["usuario"]
             session["rol"] = user["rol"]
             return redirect(url_for("dashboard"))
@@ -287,4 +293,6 @@ def launch_dcp():
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    host = os.getenv("FLASK_RUN_HOST", "127.0.0.1")
+    port = int(os.getenv("FLASK_RUN_PORT", "5000"))
+    app.run(host=host, port=port, debug=Config.DEBUG)
