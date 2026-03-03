@@ -35,7 +35,7 @@ class Config:
     DCP_URL = "/launch/dcp"
     SOBRE_II_URL = ""
     POLIZAS_URL = "#"  # Por desarrollar
-    RRHH_URL = "#"  # Por desarrollar
+    RRHH_URL = "https://rrhh.iarsa.com.ar/"
     COMBUSTIBLE_URL = "#"  # Por desarrollar
 
 
