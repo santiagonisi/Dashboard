@@ -36,6 +36,11 @@
         <label for="activo" class="form-check-label">Activo</label>
     </div>
 
+    <div class="col-md-4 form-check mt-2">
+        <input type="checkbox" class="form-check-input" id="rrhh_extra_access" name="rrhh_extra_access" value="1" {% if user.rrhh_extra_access %}checked{% endif %}>
+        <label for="rrhh_extra_access" class="form-check-label">Acceso adicional a RRHH (fuera del rol)</label>
+    </div>
+
     <div class="col-12 mt-3">
         <button class="btn btn-dark">Guardar</button>
         <a href="{{ url_for('admin_usuarios') }}" class="btn btn-secondary ms-2">Cancelar</a>

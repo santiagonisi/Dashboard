@@ -58,6 +58,21 @@
                 </select>
             </div>
 
+            <div class="col-md-12">
+                <div class="form-check">
+                    <input
+                        type="checkbox"
+                        class="form-check-input"
+                        id="rrhh_extra_access"
+                        name="rrhh_extra_access"
+                        value="1"
+                    >
+                    <label class="form-check-label" for="rrhh_extra_access">
+                        Acceso adicional a RRHH (fuera del rol)
+                    </label>
+                </div>
+            </div>
+
             <div class="col-md-1 d-grid">
                 <button class="btn btn-dark">Crear</button>
             </div>
@@ -70,6 +85,7 @@
                         <th>Usuario</th>
                         <th>Rol</th>
                         <th>Estado</th>
+                        <th>Acceso RRHH extra</th>
                         <th class="text-center">Acciones</th>
                     </tr>
                 </thead>
@@ -84,6 +100,13 @@
                                 <span class="badge bg-success">Activo</span>
                             {% else %}
                                 <span class="badge bg-secondary">Inactivo</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if u.rrhh_extra_access %}
+                                <span class="badge bg-primary">Habilitado</span>
+                            {% else %}
+                                <span class="badge bg-light text-dark border">No</span>
                             {% endif %}
                         </td>
                         <td class="text-center">
@@ -102,6 +125,13 @@
                             <a href="{{ url_for('edit_usuario', user_id=u.id) }}" class="btn btn-sm btn-primary ms-2 btn-emoji" title="Editar" aria-label="Editar">
                                 ✏️
                             </a>
+
+                            <form method="POST" action="{{ url_for('toggle_rrhh_access', user_id=u.id) }}" style="display:inline">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button class="btn btn-sm btn-outline-primary ms-2" title="Alternar acceso RRHH extra" aria-label="Alternar acceso RRHH extra">
+                                    RRHH
+                                </button>
+                            </form>
 
                             <form method="POST" action="{{ url_for('delete_usuario', user_id=u.id) }}" style="display:inline" onsubmit="return confirm('¿Eliminar usuario {{ u.usuario }}? Esta acción no se puede deshacer');">
                                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">

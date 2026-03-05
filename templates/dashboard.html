@@ -189,7 +189,7 @@
         </a>
         {% endif %}
 
-        {% if session["rol"] in ["admin", "tecnica"] %}
+        {% if session["rol"] in ["admin", "tecnica", "gestion"] %}
         <a href="{{ polizas }}" class="card-link">
             <div class="card">
                 <div class="icon">📋</div>
@@ -199,7 +199,7 @@
         </a>
         {% endif %}
 
-        {% if session["rol"] in ["admin", "gestion"] %}
+        {% if can_rrhh %}
         <a href="{{ rrhh }}" class="card-link">
             <div class="card">
                 <div class="icon">👥</div>

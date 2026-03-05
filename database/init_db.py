@@ -16,7 +16,8 @@ CREATE TABLE IF NOT EXISTS usuarios (
     usuario TEXT UNIQUE NOT NULL,
     password TEXT NOT NULL,
     rol TEXT NOT NULL,
-    activo INTEGER DEFAULT 1
+    activo INTEGER DEFAULT 1,
+    rrhh_extra_access INTEGER NOT NULL DEFAULT 0
 )
 """)
 

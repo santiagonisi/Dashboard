@@ -20,6 +20,36 @@ csrf = CSRFProtect(app)
 ROLES = ["admin", "operador", "laboratorio", "tecnica", "gestion"]
 
 
+def ensure_usuarios_schema():
+    conn = get_db_connection()
+    try:
+        cursor = conn.cursor()
+        cursor.execute("PRAGMA table_info(usuarios)")
+        columns = {row["name"] for row in cursor.fetchall()}
+
+        if not columns:
+            return
+
+        if "rrhh_extra_access" not in columns:
+            cursor.execute(
+                """
+                ALTER TABLE usuarios
+                ADD COLUMN rrhh_extra_access INTEGER NOT NULL DEFAULT 0
+                """
+            )
+            conn.commit()
+    finally:
+        conn.close()
+
+
+def can_access_rrhh(usuario, rol):
+    if rol in {"admin", "gestion"}:
+        return True
+
+    user = get_user(usuario)
+    return bool(user and user["rrhh_extra_access"])
+
+
 def redirect_to_module(module_name, target_url):
     if not target_url or target_url.strip() in {"", "#"}:
         return abort(503, description=f"Módulo '{module_name}' no disponible")
@@ -52,6 +82,9 @@ def role_required(roles):
     return wrapper
 
 
+ensure_usuarios_schema()
+
+
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
@@ -77,6 +110,11 @@ def dashboard():
     if "usuario" not in session:
         return redirect(url_for("login"))
 
+    rrhh_enabled = can_access_rrhh(
+        session.get("usuario"),
+        session.get("rol")
+    )
+
     return render_template(
         "dashboard.html",
         logistica=Config.LOGISTICA_URL,
@@ -86,7 +124,8 @@ def dashboard():
         sobre_II=Config.SOBRE_II_URL,
         polizas=Config.POLIZAS_URL,
         rrhh=Config.RRHH_URL,
-        combustible=Config.COMBUSTIBLE_URL
+        combustible=Config.COMBUSTIBLE_URL,
+        can_rrhh=rrhh_enabled
     )
 
 
@@ -115,7 +154,7 @@ def sobre_ii():
 
 
 @app.route("/polizas")
-@role_required(["admin", "tecnica"])
+@role_required(["admin", "tecnica", "gestion"])
 def polizas():
     return redirect_to_module("Pólizas", Config.POLIZAS_URL)
 
@@ -133,8 +172,13 @@ def presupuestos():
 
 
 @app.route("/rrhh")
-@role_required(["admin", "gestion"])
 def rrhh():
+    if "usuario" not in session:
+        return redirect(url_for("login"))
+
+    if not can_access_rrhh(session.get("usuario"), session.get("rol")):
+        return abort(403)
+
     return redirect_to_module("RRHH", Config.RRHH_URL)
 
 
@@ -150,13 +194,14 @@ def admin_usuarios():
         usuario = request.form["usuario"]
         password = request.form["password"]
         rol = request.form["rol"]
+        rrhh_extra_access = 1 if request.form.get("rrhh_extra_access") == "1" else 0
 
         try:
             password_hash = generate_password_hash(password)
             cursor.execute("""
-                INSERT INTO usuarios (usuario, password, rol, activo)
-                VALUES (?, ?, ?, 1)
-            """, (usuario, password_hash, rol))
+                INSERT INTO usuarios (usuario, password, rol, activo, rrhh_extra_access)
+                VALUES (?, ?, ?, 1, ?)
+            """, (usuario, password_hash, rol, rrhh_extra_access))
             conn.commit()
         except sqlite3.IntegrityError:
             error_msg = "El usuario ya existe."
@@ -190,20 +235,23 @@ def edit_usuario(user_id):
         usuario = request.form["usuario"]
         rol = request.form["rol"]
         activo = 1 if request.form.get("activo") == "1" else 0
+        rrhh_extra_access = 1 if request.form.get("rrhh_extra_access") == "1" else 0
         password = request.form.get("password")
 
         try:
             if password:
                 password_hash = generate_password_hash(password)
                 cursor.execute("""
-                    UPDATE usuarios SET usuario = ?, password = ?, rol = ?, activo = ?
+                    UPDATE usuarios
+                    SET usuario = ?, password = ?, rol = ?, activo = ?, rrhh_extra_access = ?
                     WHERE id = ?
-                """, (usuario, password_hash, rol, activo, user_id))
+                """, (usuario, password_hash, rol, activo, rrhh_extra_access, user_id))
             else:
                 cursor.execute("""
-                    UPDATE usuarios SET usuario = ?, rol = ?, activo = ?
+                    UPDATE usuarios
+                    SET usuario = ?, rol = ?, activo = ?, rrhh_extra_access = ?
                     WHERE id = ?
-                """, (usuario, rol, activo, user_id))
+                """, (usuario, rol, activo, rrhh_extra_access, user_id))
             conn.commit()
         except sqlite3.IntegrityError:
             conn.close()
@@ -256,6 +304,32 @@ def toggle_usuario(user_id):
         SET activo = CASE activo WHEN 1 THEN 0 ELSE 1 END
         WHERE id = ?
     """, (user_id,))
+
+    conn.commit()
+    conn.close()
+
+    return redirect(url_for("admin_usuarios"))
+
+
+@app.route("/admin/usuarios/toggle-rrhh/<int:user_id>", methods=["POST"])
+@role_required(["admin"])
+def toggle_rrhh_access(user_id):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT id FROM usuarios WHERE id = ?", (user_id,))
+    if not cursor.fetchone():
+        conn.close()
+        return redirect(url_for("admin_usuarios", error="Usuario no encontrado"))
+
+    cursor.execute(
+        """
+        UPDATE usuarios
+        SET rrhh_extra_access = CASE rrhh_extra_access WHEN 1 THEN 0 ELSE 1 END
+        WHERE id = ?
+        """,
+        (user_id,)
+    )
 
     conn.commit()
     conn.close()
