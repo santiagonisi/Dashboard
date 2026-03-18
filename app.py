@@ -24,11 +24,20 @@ def ensure_usuarios_schema():
     conn = get_db_connection()
     try:
         cursor = conn.cursor()
+        cursor.execute(
+            """
+            CREATE TABLE IF NOT EXISTS usuarios (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                usuario TEXT UNIQUE NOT NULL,
+                password TEXT NOT NULL,
+                rol TEXT NOT NULL,
+                activo INTEGER DEFAULT 1,
+                rrhh_extra_access INTEGER NOT NULL DEFAULT 0
+            )
+            """
+        )
         cursor.execute("PRAGMA table_info(usuarios)")
         columns = {row["name"] for row in cursor.fetchall()}
-
-        if not columns:
-            return
 
         if "rrhh_extra_access" not in columns:
             cursor.execute(
@@ -37,7 +46,7 @@ def ensure_usuarios_schema():
                 ADD COLUMN rrhh_extra_access INTEGER NOT NULL DEFAULT 0
                 """
             )
-            conn.commit()
+        conn.commit()
     finally:
         conn.close()
 
@@ -67,6 +76,22 @@ def get_user(usuario):
         return cursor.fetchone()
     finally:
         conn.close()
+
+
+def count_active_admins(cursor):
+    cursor.execute(
+        "SELECT COUNT(*) as count FROM usuarios WHERE rol = 'admin' AND activo = 1"
+    )
+    return cursor.fetchone()[0]
+
+
+def is_last_active_admin_change(user, new_role, new_active, cursor):
+    return (
+        user["rol"] == "admin"
+        and user["activo"] == 1
+        and (new_role != "admin" or new_active != 1)
+        and count_active_admins(cursor) <= 1
+    )
 
 
 def role_required(roles):
@@ -191,20 +216,28 @@ def admin_usuarios():
     error_msg = request.args.get("error")
 
     if request.method == "POST":
-        usuario = request.form["usuario"]
+        usuario = request.form["usuario"].strip()
         password = request.form["password"]
-        rol = request.form["rol"]
+        rol = request.form["rol"].strip()
         rrhh_extra_access = 1 if request.form.get("rrhh_extra_access") == "1" else 0
 
-        try:
-            password_hash = generate_password_hash(password)
-            cursor.execute("""
-                INSERT INTO usuarios (usuario, password, rol, activo, rrhh_extra_access)
-                VALUES (?, ?, ?, 1, ?)
-            """, (usuario, password_hash, rol, rrhh_extra_access))
-            conn.commit()
-        except sqlite3.IntegrityError:
-            error_msg = "El usuario ya existe."
+        if not usuario:
+            error_msg = "El usuario no puede estar vacío."
+        elif not password:
+            error_msg = "La contraseña no puede estar vacía."
+        elif rol not in ROLES:
+            error_msg = "El rol seleccionado no es válido."
+
+        if not error_msg:
+            try:
+                password_hash = generate_password_hash(password)
+                cursor.execute("""
+                    INSERT INTO usuarios (usuario, password, rol, activo, rrhh_extra_access)
+                    VALUES (?, ?, ?, 1, ?)
+                """, (usuario, password_hash, rol, rrhh_extra_access))
+                conn.commit()
+            except sqlite3.IntegrityError:
+                error_msg = "El usuario ya existe."
 
     cursor.execute("SELECT * FROM usuarios")
     usuarios = cursor.fetchall()
@@ -232,11 +265,32 @@ def edit_usuario(user_id):
         return redirect(url_for("admin_usuarios", error="Usuario no encontrado"))
 
     if request.method == "POST":
-        usuario = request.form["usuario"]
-        rol = request.form["rol"]
+        usuario = request.form["usuario"].strip()
+        rol = request.form["rol"].strip()
         activo = 1 if request.form.get("activo") == "1" else 0
         rrhh_extra_access = 1 if request.form.get("rrhh_extra_access") == "1" else 0
-        password = request.form.get("password")
+        password = request.form.get("password", "")
+
+        if not usuario:
+            conn.close()
+            return redirect(
+                url_for("admin_usuarios", error="El usuario no puede estar vacío")
+            )
+
+        if rol not in ROLES:
+            conn.close()
+            return redirect(
+                url_for("admin_usuarios", error="El rol seleccionado no es válido")
+            )
+
+        if is_last_active_admin_change(user, rol, activo, cursor):
+            conn.close()
+            return redirect(
+                url_for(
+                    "admin_usuarios",
+                    error="No se puede modificar al único administrador activo"
+                )
+            )
 
         try:
             if password:
@@ -277,8 +331,7 @@ def delete_usuario(user_id):
         conn.close()
         return redirect(url_for("admin_usuarios", error="Usuario no encontrado"))
 
-    cursor.execute("SELECT COUNT(*) as count FROM usuarios WHERE rol = 'admin' AND activo = 1")
-    admin_count = cursor.fetchone()[0]
+    admin_count = count_active_admins(cursor)
     if user["rol"] == "admin" and admin_count <= 1:
         conn.close()
         return redirect(url_for("admin_usuarios", error="No se puede eliminar al único administrador activo"))
@@ -298,6 +351,19 @@ def delete_usuario(user_id):
 def toggle_usuario(user_id):
     conn = get_db_connection()
     cursor = conn.cursor()
+
+    cursor.execute("SELECT * FROM usuarios WHERE id = ?", (user_id,))
+    user = cursor.fetchone()
+
+    if not user:
+        conn.close()
+        return redirect(url_for("admin_usuarios", error="Usuario no encontrado"))
+
+    if is_last_active_admin_change(user, user["rol"], 0, cursor):
+        conn.close()
+        return redirect(
+            url_for("admin_usuarios", error="No se puede desactivar al único administrador activo")
+        )
 
     cursor.execute("""
         UPDATE usuarios
@@ -359,16 +425,21 @@ def auth_status():
 @role_required(["admin", "laboratorio"])
 def launch_dcp():
     """Lanza la aplicación DCP ejecutable"""
+    executable_path = Config.DCP_EXECUTABLE_PATH
+
+    if not executable_path or not os.path.exists(executable_path):
+        return abort(503, description="El ejecutable de DCP no está disponible")
+
     try:
         subprocess.Popen(
-            r"C:\Users\Usuario\Desktop\Dcp\dist\ProcesadorDCP\ProcesadorDCP.exe",
+            executable_path,
             shell=False,
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL
         )
         return redirect(url_for("dashboard"))
-    except Exception as e:
-        return redirect(url_for("dashboard"))
+    except OSError:
+        return abort(503, description="No se pudo iniciar el módulo DCP")
 
 
 
