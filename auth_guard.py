@@ -1,25 +1,29 @@
 import jwt
+from functools import wraps
 from flask import request, redirect
 import config
 
 
 def login_required(func):
+    @wraps(func)
     def wrapper(*args, **kwargs):
         token = request.cookies.get("auth_token")
+        auth_url = getattr(config, "AUTH_URL", "/login")
+        jwt_secret = getattr(config, "JWT_SECRET", None)
+        jwt_algorithm = getattr(config, "JWT_ALGORITHM", "HS256")
 
-        if not token:
-            return redirect(config.AUTH_URL)
+        if not token or not jwt_secret:
+            return redirect(auth_url)
 
         try:
             jwt.decode(
                 token,
-                config.JWT_SECRET,
-                algorithms=[config.JWT_ALGORITHM]
+                jwt_secret,
+                algorithms=[jwt_algorithm]
             )
-        except:
-            return redirect(config.AUTH_URL)
+        except jwt.InvalidTokenError:
+            return redirect(auth_url)
 
         return func(*args, **kwargs)
 
-    wrapper.__name__ = func.__name__
     return wrapper
