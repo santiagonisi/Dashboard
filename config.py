@@ -47,6 +47,6 @@ class Config:
     SOBRE_II_URL = ""
     POLIZAS_URL = "#"  # Por desarrollar
     RRHH_URL = "https://rrhh.iarsa.com.ar/"
-    COMBUSTIBLE_URL = "#"  # Por desarrollar
+    COMBUSTIBLE_URL = "https://combustible.iarsa.com.ar/"
 
 
